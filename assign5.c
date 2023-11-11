@@ -16,10 +16,10 @@
 typedef struct
 {
     char course_Name[80];
+    unsigned int padding;
     char course_Sched[4];
-    unsigned course_Hours;
-    unsigned course_Size;
-    unsigned padding;
+    unsigned int course_Size;
+    unsigned int course_Hours;
 } COURSE;
 
 typedef unsigned char byte_t;
@@ -29,12 +29,13 @@ off_t getCourseFileSize(int fd)
     return lseek(fd, 0, SEEK_END);
 }
 
-void printCourse(COURSE course)
+void printCourse(int courseNumber, COURSE course)
 {
-    printf("%s\n", course.course_Name);
-    printf("%s\n", course.course_Sched);
-    printf("%u", course.course_Hours);
-    printf("%u", course.course_Size);
+    printf("Course number: %d\n", courseNumber);
+    printf("Course name: %s\n", course.course_Name);
+    printf("Scheduled days: %s\n", course.course_Sched);
+    printf("Credit hours: %u\n", course.course_Hours);
+    printf("Enrolled Students: %u\n", course.course_Size);
 }
 
 void createCourse(int courseFile)
@@ -42,10 +43,6 @@ void createCourse(int courseFile)
     // Using the buffer created in main.
     char buffer[100];
     int courseNumber;
-    char courseName[80];
-    char courseSched[4];
-    unsigned courseHours;
-    unsigned courseSize;
     COURSE course;
 
     // i. Course number (zero-indexed integer)
@@ -73,7 +70,7 @@ void createCourse(int courseFile)
     sscanf(buffer, "%u", &course.course_Size);
 
     // Add the struct to the file.
-    lseek(courseFile, 0, courseNumber * sizeof(COURSE));
+    lseek(courseFile, courseNumber * sizeof(COURSE), SEEK_SET);
     write(courseFile, &course, sizeof(COURSE));
     printf("Course added!\n");
 }
@@ -88,10 +85,9 @@ void readCourse(int fd_courses)
     fgets(buffer, 100, stdin);
     sscanf(buffer, "%d\n", &number);
 
-    printf("Course number: %d\n", number * (int)sizeof(COURSE));
-    lseek(fd_courses, 0, number * sizeof(COURSE));
+    lseek(fd_courses, number * sizeof(COURSE), SEEK_SET);
     read(fd_courses, &course, sizeof(COURSE));
-    printCourse(course);
+    printCourse(number, course);
 }
 
 int printMenu()
