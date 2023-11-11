@@ -90,7 +90,7 @@ void readCourse(int fd_courses)
 
     printf("Course number: %d\n", number * (int)sizeof(COURSE));
     lseek(fd_courses, 0, number * sizeof(COURSE));
-    read(fd_courses, &course, number * sizeof(COURSE));
+    read(fd_courses, &course, sizeof(COURSE));
     printCourse(course);
 }
 
@@ -108,7 +108,6 @@ int main(int argc, char* argv[])
 {
     char input;
     char buffer[100];
-    char scanned[100];
     int courses = open("assign3/data/courses.dat", O_RDWR);
 
     if (courses == -1)
@@ -119,8 +118,7 @@ int main(int argc, char* argv[])
 
     while (printMenu() && fgets(buffer, 5, stdin))
     {
-
-        input = buffer[0];
+        sscanf(buffer, "%c", &input);
 
         switch (input)
         {
