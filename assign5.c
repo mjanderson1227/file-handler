@@ -38,7 +38,7 @@ void printCourse(int courseNumber, COURSE course)
     printf("Enrolled Students: %u\n", course.course_Size);
 }
 
-void createCourse(int courseFile)
+void createCourse(int fd_courses)
 {
     // Using the buffer created in main.
     char buffer[100];
@@ -70,8 +70,8 @@ void createCourse(int courseFile)
     sscanf(buffer, "%u", &course.course_Size);
 
     // Add the struct to the file.
-    lseek(courseFile, courseNumber * sizeof(COURSE), SEEK_SET);
-    write(courseFile, &course, sizeof(COURSE));
+    lseek(fd_courses, courseNumber * sizeof(COURSE), SEEK_SET);
+    write(fd_courses, &course, sizeof(COURSE));
     printf("Course added!\n");
 }
 
