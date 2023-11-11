@@ -1,8 +1,12 @@
-binary: assign5.o
-	gcc -g assign5.o -o binary
-
-assign5.o: assign5.c
-	 gcc -c assign5.c
-
+PROGRAMS = binary
+CC = gcc
+CFLAGS = -Wall -g
+all: $(PROGRAMS)
 clean:
-	rm -rf *.o
+	rm -f *.o
+
+assign5.o:
+	$(CC) $(CFLAGS) -c assign5.c
+
+binary: assign5.o
+	$(CC) $(CFLAGS) assign5.o -o binary
