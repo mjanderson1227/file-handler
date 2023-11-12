@@ -4,14 +4,13 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 
-// TODO: Fix this struct and reorder the members.
 typedef struct
 {
     char course_Name[80];
-    unsigned int padding;
     char course_Sched[4];
-    unsigned int course_Size;
     unsigned int course_Hours;
+    unsigned int course_Size;
+    unsigned int padding;
 } COURSE;
 
 int printMenu();
