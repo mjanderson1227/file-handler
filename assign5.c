@@ -1,17 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-
-typedef struct
-{
-    char course_Name[80];
-    char course_Sched[4];
-    unsigned int course_Hours;
-    unsigned int course_Size;
-    unsigned int padding;
-} COURSE;
+#include "assign5.h"
 
 int printMenu();
 void printCourse(int, COURSE);
@@ -28,13 +15,11 @@ void createCourse(int fd_courses)
 
     // Check if the file already has a name associated with it.
     lseek(fd_courses, courseNumber * sizeof(COURSE), SEEK_SET);
-    read(fd_courses, &course, sizeof(COURSE));
-    if (course.course_Hours)
+    if (read(fd_courses, &course, sizeof(COURSE)) == sizeof(COURSE) && course.course_Hours)
     {
         printf("ERROR: course already exists\n");
         return;
     }
-    // Seek back to the location to write at.
     lseek(fd_courses, -sizeof(COURSE), SEEK_CUR);
 
     printf("Enter course name: ");
@@ -70,33 +55,36 @@ void updateCourse(int fd_courses)
 
     // Grab the previous possible course data.
     lseek(fd_courses, courseNumber * sizeof(COURSE), SEEK_SET);
-    read(fd_courses, &existingCourse, sizeof(COURSE));
-    lseek(fd_courses, -sizeof(COURSE), SEEK_CUR);
-    if (!existingCourse.course_Hours)
+    if (read(fd_courses, &existingCourse, sizeof(COURSE)) < sizeof(COURSE) || !existingCourse.course_Hours)
     {
         printf("ERROR: course not found\n");
         return;
     }
+    lseek(fd_courses, -sizeof(COURSE), SEEK_CUR);
 
     printf("Enter course name: ");
-    fgets(buffer, 80, stdin);
-    if (!sscanf(buffer, "%[^\n]\n", newCourse.course_Name))
+    if (*fgets(buffer, 80, stdin) == '\n')
         strcpy(newCourse.course_Name, existingCourse.course_Name);
+    else
+        sscanf(buffer, "%[^\n]\n", newCourse.course_Name);
 
     printf("Enter course schedule: ");
-    fgets(buffer, 5, stdin);
-    if (!sscanf(buffer, "%s", newCourse.course_Sched))
+    if (*fgets(buffer, 5, stdin) == '\n')
         strcpy(newCourse.course_Sched, existingCourse.course_Sched);
+    else
+        sscanf(buffer, "%s\n", newCourse.course_Sched);
 
     printf("Enter course credit hours: ");
-    fgets(buffer, 4, stdin);
-    if (buffer[0] == '\n' || !sscanf(buffer, "%u", &newCourse.course_Hours))
+    if (*fgets(buffer, 4, stdin) == '\n')
         newCourse.course_Hours = existingCourse.course_Hours;
+    else
+        sscanf(buffer, "%u", &newCourse.course_Hours);
 
     printf("Enter course enrollment: ");
-    fgets(buffer, 5, stdin);
-    if (buffer[0] == '\n' || !sscanf(buffer, "%u", &newCourse.course_Size))
+    if (*fgets(buffer, 5, stdin) == '\n')
         newCourse.course_Size = existingCourse.course_Size;
+    else
+        sscanf(buffer, "%u", &newCourse.course_Size);
 
     write(fd_courses, &newCourse, sizeof(COURSE));
     printf("Course updated!\n");
@@ -113,8 +101,7 @@ void readCourse(int fd_courses)
     sscanf(buffer, "%d\n", &number);
 
     lseek(fd_courses, number * sizeof(COURSE), SEEK_SET);
-    read(fd_courses, &course, sizeof(COURSE));
-    if (!course.course_Hours)
+    if (read(fd_courses, &course, sizeof(COURSE)) < sizeof(COURSE) || !course.course_Hours)
     {
         printf("ERROR: Course not found\n");
         return;
@@ -135,13 +122,13 @@ void deleteCourse(int fd_courses)
 
     // Load existing course data to see if one already exists.
     lseek(fd_courses, courseNumber * sizeof(COURSE), SEEK_SET);
-    read(fd_courses, &deletionObject, sizeof(COURSE));
-    lseek(fd_courses, -sizeof(COURSE), SEEK_CUR);
-    if (deletionObject.course_Hours == 0)
+    if (deletionObject.course_Hours == 0 || read(fd_courses, &deletionObject, sizeof(COURSE)) < sizeof(COURSE))
     {
         printf("ERROR: course not found\n");
         return;
     }
+    lseek(fd_courses, -sizeof(COURSE), SEEK_CUR);
+
     // Set every bit in the struct to 0.
     deletionObject = (COURSE){0};
 
